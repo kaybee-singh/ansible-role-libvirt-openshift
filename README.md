@@ -13,3 +13,22 @@ virsh net-list --all
 --------------------------------------------
  default   active   yes         yes
 ```
+To run role follow below steps.
+```bash
+git clone https://github.com/kaybee-singh/ansible-role-libvirt-openshift;cd ansible-role-libvirt-openshift
+```
+Modify hosts file and enter the VMs name which you want to create. Same vms will be created in the libvirt.
+```bash
+vim hosts
+[ocp_vms]
+bootstrap
+master1
+master2
+master2
+[ocp_vms:vars]
+ansible_connection=local
+```
+Run the playbook
+```bash
+ansible-playbook playbook.yaml
+```
