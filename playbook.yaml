@@ -1,0 +1,6 @@
+- name: Create OCP VMs
+  hosts: ocp_vms
+  gather_facts: false
+  roles:
+    - ansible-role-libvirt
+

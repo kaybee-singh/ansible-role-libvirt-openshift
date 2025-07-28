@@ -1,0 +1,4 @@
+[ocp_vms]
+abc2
+[ocp_vms:vars]
+ansible_connection=local

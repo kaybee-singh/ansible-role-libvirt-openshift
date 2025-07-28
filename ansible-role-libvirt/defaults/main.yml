@@ -1,0 +1,8 @@
+---
+# defaults file for ansible-role-libvirt
+vm_vcpus: 4
+vm_memory: 16384
+vm_disk_size: 80
+vm_iso_path: /home/karan/vms/rhcos-live-iso.x86_64.iso
+vm_disk_dir: /home/karan/vms
+

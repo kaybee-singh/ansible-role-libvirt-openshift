@@ -1,0 +1,50 @@
+---
+# tasks file for ansible-role-libvirt
+
+- name: Ensure disk exists
+  command: >
+    qemu-img create -f qcow2 {{ vm_disk_dir }}/{{ inventory_hostname }}.qcow2 {{ vm_disk_size }}G
+  args:
+    creates: "{{ vm_disk_dir }}/{{ inventory_hostname }}.qcow2"
+
+- name: Render VM XML from template
+  template:
+    src: vm.xml.j2
+    dest: "{{ vm_disk_dir }}/{{ inventory_hostname }}.xml"
+
+- name: Check if VM is already defined
+  command: virsh dominfo {{ inventory_hostname }}
+  register: vm_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Check if VM is already defined
+  ansible.builtin.command: virsh dominfo {{ inventory_hostname }}
+  register: vm_check
+  # This task should only truly fail if virsh itself encounters a problem
+  # rc=0 means VM is defined (success), rc=1 means VM is not found (expected for new VMs).
+  # We consider anything other than 0 or 1 as an actual failure.
+  failed_when: "vm_check.rc != 0 and vm_check.rc != 1"
+  changed_when: false # This task doesn't change anything, just checks
+
+- name: Define VM using virsh only if not already defined
+  command: virsh define {{ vm_disk_dir }}/{{ inventory_hostname }}.xml
+  when: vm_check.rc != 0
+  register: define_result
+
+- name: Set fact to start VM
+  set_fact:
+    should_start_vm: true
+  when:
+    - define_result is defined
+      #- define_result.rc == 0
+
+- name: Start VM if marked
+  command: virsh start {{ inventory_hostname }}
+  when: should_start_vm | default(false)
+
+- name: Remove temporary XML definition file
+  file:
+    path: "{{ vm_disk_dir }}/{{ inventory_hostname }}.xml"
+    state: absent
+
